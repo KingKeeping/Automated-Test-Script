@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Test Suite">
+    <test verbose="2" preserve-order="true" name="C:/dev/AutomatedTestScript">
+        <classes>
+           <class name="com.get.automation.tests.ktests.KmokeTest">
+               <methods>
+                   <include name="klogin"></include>
+               </methods>
+           </class>
+            <class name="com.get.automation.tests.ktests.KmokeTest02"></class>
+        </classes>
+    </test>
+</suite>
