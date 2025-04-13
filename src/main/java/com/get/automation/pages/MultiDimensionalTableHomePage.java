@@ -86,22 +86,21 @@ public class MultiDimensionalTableHomePage {
         //拿到当前页文件名称,所有页面均适用
         public List<String> getTableNames(){
                 try{
-                        List<String> tableName=new ArrayList<>();
+                        List<String> tableNames=new ArrayList<>();
                         //拿到下面的子结点，这里是拿到文件名称
                         List<WebElement> elements=WebElementUtils
                                 .waitForElementsWithRetry(By.cssSelector(".name-txt"),5,driver);
-                        //List<WebElement> elements = driver.findElements(By.cssSelector(".name-txt"));
                         elements.forEach(webElement -> {
-                                WebElement element= WebElementUtils
-                                        .waitForElementWithRetry((By.cssSelector(".name-txt-inner")),5,driver);
-                                //WebElement element = webElement.findElement(By.cssSelector(".name-txt-inner"));
+                                WebElement element = webElement.findElement(By.cssSelector(".name-txt-inner"));
                                 String name=element.getText();
                                 if(name!=null){
-                                        tableName.add(name);
+                                        tableNames.add(name);
                                 }
+
                         });
-                        return tableName;
-                }catch (Exception e){
+                        System.out.println("获取的文件名为："+tableNames);
+                        return tableNames;
+                }catch (StaleElementReferenceException e){
                         logger.error("获取文件名失败",e.getMessage());
                 }
                 throw new RuntimeException("获取文件名操作异常");
@@ -156,15 +155,24 @@ public class MultiDimensionalTableHomePage {
 
 
         //创建多维表功能
-        public void createTable(Actions actions){
+        public void createTable(Actions actions,String newName){
                 try {
+                        //点击按钮
                         createBtn.click();
-                        //点击确定按钮
-                        WebElement parentbtn = WebElementUtils
-                                .waitForElementWithRetry(By.cssSelector(".ant-modal-confirm-btns"), 4, driver);
-                        JavascriptExecutor executor = (JavascriptExecutor) driver;
-                                 executor.executeScript("arguments[0].click();"
-                                         , parentbtn.findElement(By.cssSelector(".ant-btn.ant-btn-primary")));
+                        WebElement confirm = WebElementUtils.waitForElementWithRetry(By
+                                .xpath("//button[@class='ant-btn ant-btn-primary']"), 20, driver);
+                        confirm.click();
+                        //跳转到表格页面进行表名更新
+                        WebElement click = WebElementUtils.waitForElementWithRetry(By.xpath("//div[@class='name-txt']")
+                                , 12, driver);
+                        click.click();
+                        //清除原有表名，填入新的表名
+                        WebElement clear=driver.findElement(By.xpath("//*[name()='path' and contains(@d,'M512 64C26')]"));
+                        //使用action chains点击该svg元素
+                        actions.moveToElement(clear).click();
+                        WebElement input = driver.findElement(By.xpath("//input[@placeholder='请输入名称']"));
+                        deleteFileAndInput(input,actions,newName);
+
 
                 }catch (Exception e){
                         logger.error("新建多维表异常");
@@ -219,6 +227,8 @@ public class MultiDimensionalTableHomePage {
                 }
         }
 
+
+        //文本框填入操作
         private void deleteFileAndInput(WebElement input,Actions actions,String newName) {
                 try {
                         /*WebElement deleteBtn = WebElementUtils.waitForElementWithRetry(By

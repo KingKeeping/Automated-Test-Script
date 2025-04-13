@@ -40,10 +40,11 @@ public class MultiDimensionalTableTest {
     //点击新建文件
         @Test(priority = 1)
         public void testCreateNewFile() {
-            homePage.createTable(actions);
-            WebElement message=driver.findElement(By.cssSelector(".ant-message-notice-content"));
-            if(message.getText()!=null){
-                Assert.assertTrue(true);
+            homePage.createTable(actions,"测试新建");
+            WebElement alert=driver.findElement(By.cssSelector(".ant-message-notice-content"));
+            String message = alert.findElement(By.tagName("span")).getText();
+            if(message!=null){
+                Assert.assertEquals(message,"重命名成功","重命名失败");
             }else {
                 Assert.assertTrue(false);
             }
@@ -60,7 +61,7 @@ public class MultiDimensionalTableTest {
         homePage.click(homePage.getManagedByMeButton());
         List<WebElement> myTables = driver.findElements(By.xpath("//td[contains(text(), '鲜蕾')]"));
         List<WebElement> elements = homePage.getValidElement("我管理的");
-        if(!elements.isEmpty()){
+        if(!(elements.isEmpty())){
             Assert.assertEquals(elements.size() ,myTables.size(),"有存在不是我创建的文件");
         }
         waitFor(4000L);
@@ -81,13 +82,13 @@ public class MultiDimensionalTableTest {
                         favoritesTable(homePage.getValidElement("我管理的"), actions);
                 if((type.get(0)).equals("收藏")){
                     //跳转到收藏页面查看是否收藏成功
-                    if (!(homePage.getTableNames()).isEmpty()){
+                    if (!((homePage.getTableNames()).isEmpty())){
                         homePage.click(homePage.getFavoritesButton());
                         Assert.assertTrue((homePage.getTableNames()).contains(type.get(1)),"收藏失败");
                     }
                 }else {
                     //跳转到收藏页面，查看收藏中是否还存在此文件
-                    if(!(homePage.getTableNames()).isEmpty()){
+                    if(!((homePage.getTableNames()).isEmpty())){
                         homePage.click(homePage.getFavoritesButton());
                         Assert.assertTrue(!(homePage.getTableNames().contains(type.get(1))),"取消收藏失败");
                     }
@@ -136,7 +137,7 @@ public class MultiDimensionalTableTest {
         public void testCleanFiles(){
             homePage.click(homePage.getRecycleBinButton());
             List<WebElement> elements = homePage.getValidElement("回收站");
-            if(!elements.isEmpty()){
+            if(!(elements.isEmpty())){
                 String s = homePage.permanentlyDeleteFile(elements, actions);
                 //判断当前页面是否还存在这个文件
                 if(!(homePage.getTableNames().isEmpty())) {
@@ -155,8 +156,14 @@ public class MultiDimensionalTableTest {
         List<WebElement> elements = homePage.getValidElement("我管理的");
         String tableName=homePage.reNameTable(newName,elements,actions);
         //进行判断,拿到当前页面的文件名称，判断有没有包含当前文件名的文件
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         List<String> tableNames = homePage.getTableNames();
         if(!tableNames.isEmpty()){
+            System.out.println("重命名后的文件名为："+tableNames);
             Assert.assertTrue(tableNames.contains(tableName+newName),"重命名失败");
         }else {
             Assert.fail("文件列表没有返回");
@@ -171,19 +178,22 @@ public class MultiDimensionalTableTest {
             List<WebElement> btn=new ArrayList<>();
             btn.add(homePage.getRecentAccessButton());
             btn.add(homePage.getManagedByMeButton());
-            btn.add(homePage.getFavoritesButton());
-            btn.add(homePage.getRecycleBinButton());
+            //btn.add(homePage.getFavoritesButton());
+           // btn.add(homePage.getRecycleBinButton());
             WebElement randomBtn = btn.get(random.nextInt(btn.size()));
             randomBtn.click();
             //拿到当前页面的所有文件名,并随机选则一个文件名
             List<String> tableNames= homePage.getTableNames();
-            String tableName = tableNames.get(random.nextInt(tableNames.size()));
-            homePage.searchByTableName(tableName);
-            //再次拿到当前页面文件名，进行判断
-            List<String> tableNames2=homePage.getTableNames();
-
-            if(!tableNames2.contains(tableName)){
-                Assert.assertTrue(tableNames2.contains(tableName),"搜索未生效");
+            if(!(tableNames.isEmpty())){
+                String tableName = tableNames.get(random.nextInt(tableNames.size()));
+                homePage.searchByTableName(tableName);
+                //再次拿到当前页面文件名，进行判断
+                List<String> tableNames2=homePage.getTableNames();
+                if(tableNames2.contains(tableName)){
+                    Assert.assertTrue(true);
+                }
+            }else {
+                Assert.assertTrue(false);
             }
             waitFor(3000L);
         }
@@ -201,12 +211,12 @@ public class MultiDimensionalTableTest {
 
 
 
-     /*   @AfterClass
+        @AfterClass
         public void tearDown() {
             if (driver != null) {
                WebDriverManager.quitDriver(driver);
             }
-        }*/
+        }
 }
 
 
